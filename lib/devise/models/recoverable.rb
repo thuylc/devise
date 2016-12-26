@@ -143,6 +143,24 @@ module Devise
           recoverable
         end
 
+        def reset_token_valid?(token)
+          result = false
+          original_token       = token
+          reset_password_token = Devise.token_generator.digest(self, :reset_password_token, original_token)
+
+          recoverable = find_or_initialize_with_error_by(:reset_password_token, reset_password_token)
+
+          if recoverable.persisted?
+            if recoverable.reset_password_period_valid?
+              result = true
+            else
+              result = false
+            end
+          end
+          result
+          
+        end
+
         Devise::Models.config(self, :reset_password_keys, :reset_password_within, :sign_in_after_reset_password)
       end
     end
